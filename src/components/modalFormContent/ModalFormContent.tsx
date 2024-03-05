@@ -1,64 +1,57 @@
 import { useForm, Controller } from "react-hook-form";
 import { Select } from "antd";
 import { DocumentTypes } from "../../../config";
-import { useEffect } from "react";
+import {
+  IApplicantItem,
+  IrequiredFileDetailItem,
+  ModalContentProps,
+  SubmittedData,
+} from "../../types";
 
-// interface IFormData {
-//   selectedFileType: number | undefined | null;
-//   file: string | undefined;
-// }
+const ModalFormContent = ({
+  applicant,
+  rootWatch,
+  rootSetValue,
+  closeModal,
+}: ModalContentProps) => {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SubmittedData>();
 
-const ModalFormContent = ({ applicantId, globalWatch }: any) => {
-  const { control, handleSubmit, watch, setValue, getValues } = useForm();
-
-  const formatFileData = (data: any) => {
-    const selectedFileTypeIndex = data?.selectedFileType;
-
-    const selectedFileType = DocumentTypes?.find(
-      (doc) => doc?.value === selectedFileTypeIndex + 1
+  const onSubmit = (data: SubmittedData) => {
+    rootSetValue(
+      "applicant",
+      rootWatch("applicant")?.map((item: IApplicantItem) => {
+        if (item?.id == applicant?.id) {
+          return {
+            ...item,
+            documentList: [
+              ...item.documentList,
+              {
+                type: data?.selectedFileType,
+                file: data?.file,
+                fileType: DocumentTypes?.filter(
+                  (item) => item?.value == data?.selectedFileType
+                ).map((f) => f?.label),
+              },
+            ],
+            requiredFileDetail: item?.requiredFileDetail?.map(
+              (item: IrequiredFileDetailItem) => {
+                if (item?.value == data?.selectedFileType) {
+                  return { ...item, isAdded: true };
+                }
+                return item;
+              }
+            ),
+          };
+        } else {
+          return item;
+        }
+      })
     );
-
-    return {
-      ...data,
-      selectedFileType: selectedFileType?.label || "",
-      fileId: selectedFileType?.value,
-    };
-  };
-
-  const onSubmit = (data: any) => {
-    // console.log("lol", data);
-    const formattedData = formatFileData(data); // fileId, fileRoute,selectedFileType
-
-    // updateTableData(formattedData);
-    const selectedFileTypeIndex = watch("selectedFileType");
-    const selectedFileType = DocumentTypes?.find(
-      (doc) => doc?.value === selectedFileTypeIndex + 1
-    );
-
-    const updatedRequiredFiles = globalWatch()[
-      `${applicantId}`
-    ]?.requiredFiles.filter(
-      (fileId: number) => fileId !== selectedFileType?.value
-    );
-
-    const updatedTableData = [
-      globalWatch(),
-      {
-        selectedFileType: formattedData?.selectedFileType,
-        file: formattedData?.file,
-        fileId: formattedData.fileId,
-      },
-    ];
-
-    console.log(updatedRequiredFiles, "updated Required files");
-    console.log(updatedTableData, " updated Table data");
-
-    console.log(watch([`${applicantId}`]));
-    console.log(globalWatch()[`${applicantId}`]?.tableData);
-
-    // setValue(`${applicantId}`, updatedRequiredFiles);
-    // setValue(`${applicantId}`, updatedRequiredFiles);
-    setValue(globalWatch()[`${applicantId}`]?.tableData, updatedTableData);
+    closeModal();
   };
 
   return (
@@ -69,7 +62,6 @@ const ModalFormContent = ({ applicantId, globalWatch }: any) => {
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          alignItems: "center",
           gap: "10px",
           width: "100%",
         }}
@@ -77,32 +69,39 @@ const ModalFormContent = ({ applicantId, globalWatch }: any) => {
         <Controller
           name="selectedFileType"
           control={control}
+          rules={{
+            required: {
+              value: true,
+              message: "Zəhmət olmasa fayl növünü seçin!",
+            },
+          }}
           render={({ field: { onChange, value } }) => (
             <Select
+              placeholder={"File növü seçin"}
               style={{ width: "100%" }}
               value={value}
               onChange={onChange}
-              options={(globalWatch()[applicantId]?.requiredFiles || []).map(
-                (fileId: any, index: number) => ({
-                  label:
-                    DocumentTypes.find((doc) => doc.value === fileId)?.label ||
-                    "",
-                  value: index,
-                })
+              options={applicant?.requiredFileDetail?.filter(
+                (item: IrequiredFileDetailItem) => !item?.isAdded
               )}
             />
           )}
         />
+        {errors?.selectedFileType && (
+          <p className="error" style={{ margin: "0" }}>
+            {errors?.selectedFileType?.message}{" "}
+          </p>
+        )}
 
         <Controller
           name="file"
           control={control}
-          // rules={{
-          //   required: {
-          //     value: true,
-          //     message: "Zəhmət olmasa faylı seçin!",
-          //   },
-          // }}
+          rules={{
+            required: {
+              value: true,
+              message: "Zəhmət olmasa faylı seçin!",
+            },
+          }}
           render={({ field: { onChange, value } }) => (
             <input
               type="file"
@@ -112,11 +111,11 @@ const ModalFormContent = ({ applicantId, globalWatch }: any) => {
             />
           )}
         />
-        {/* <ErrorMessage
-          errors={errors}
-          name="file"
-          render={({ message }) => <p className="error">{message} </p>}
-        /> */}
+        {errors?.file && (
+          <p className="error" style={{ margin: "0", alignItems: "start" }}>
+            {errors?.file?.message}{" "}
+          </p>
+        )}
 
         <button style={{ width: "100%" }}>Submit</button>
       </form>

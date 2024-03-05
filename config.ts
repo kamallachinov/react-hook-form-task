@@ -1,4 +1,4 @@
-import { IApplicantItem } from './types';
+import { IApplicantItem } from './src/types';
 
 export const DocumentTypes = [
     { value: 1, label: "İşəgötürmə Təsdiqi" },
@@ -27,7 +27,8 @@ export const DocumentTypes = [
       birthYear: null,
       gender: null,
       requiredFiles: [1, 2, 4],
-      tableData: [],
+      documentList: [],
+     
     },
     {
       id: 412,
@@ -36,7 +37,7 @@ export const DocumentTypes = [
       birthYear: null,
       gender: null,
       requiredFiles: [5, 2, 6, 2, 1],
-      tableData: [],
+      documentList: [],
     },
     {
       id: 5123,
@@ -45,7 +46,7 @@ export const DocumentTypes = [
       birthYear: null,
       gender: null,
       requiredFiles: [14, 12, 11, 5],
-      tableData: [],
+      documentList: [],
     },
     {
       id: 98,
@@ -54,7 +55,7 @@ export const DocumentTypes = [
       birthYear: null,
       gender: null,
       requiredFiles: [2],
-      tableData: [],
+      documentList: [],
     },
     {
       id: 357,
@@ -63,6 +64,6 @@ export const DocumentTypes = [
       birthYear: null,
       gender: null,
       requiredFiles: [5, 14],
-      tableData: [],
+      documentList: [],
     },
   ]
